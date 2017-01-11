@@ -1,0 +1,217 @@
+<table>
+  <tr>
+    <td id="canvas-container"></td>
+    <td style="vertical-align:top; padding-right: 10%; padding-left: 10%;">
+  <h1>Stripmaps</h1>
+  <p><em>This is a bit of a rambling work in progress but TL;DR it shows how to automatically draw maps like the one on the left for any route!</em></p>
+  <p>Stripmaps are slices of map that represent a journey from one place to another,
+without necessarily being too hung up on the accuracy of the projection when you
+stray off the path. A good example is Taylor and Skinner's <a href="http://maps.nls.uk/atlas/taylor-skinner/index.html">Survey and Maps of the Roads
+  of Northern Britain or Scotland', 1776</a> - the first road atlas of Scotland.
+</p>
+
+  <p>They have a convenience for following routes that 'proper' maps don't; as in the road atlas
+(and later similar AA books) you could flip through your journey a slice at a time, or
+if printed end-to-end, you could simply scroll from one end to the other, as with
+the Inspector Gadget-esque <a href="http://99percentinvisible.org/article/analog-gps-scrolling-wrist-car-mounted-maps-roaring-20s-30s/">Wristlet</a>
+from the 1920s. Similar devices still exist for motorcycle roadbooks.</p>
+
+  <p>Nowadays we are awash with map data, and routes recorded from our runs and rides.
+  A <a href="https://somethingaboutmaps.wordpress.com/2015/09/28/a-matter-of-perspective/">linear map by Daniel Huffman
+of Lake Michigan</a> showed one way modern map data can be used to construct the maps, 
+but this was a labour of love, with carefully hand-picked transformations. Shouldn't
+it be possible to build such stripmaps automatically?</p>
+
+<h2>Modified Zhao-Saalfeld</h2>
+
+<p>A first step to maps like Huffman's, which distorts the map freely, is to try to build
+a stripmap from a route using equal-width rectangular strips, as you might with scissors and glue.
+In essence, such stripmaps take a polyline (a complex path of straight segments) and construct
+a simpler path (the centreline of the rectangles) which lies within some tolerance of the original line.
+Polyline simplification algorithms like Douglas-Puecker are widely used in mapping applications, we just need one that
+provides the required guarantees.</p>
+
+<p>The Zhao-Saalfeld algorithm (<a href="http://www.mapcontext.com/autocarto/proceedings/auto-carto-13/pdf/linear-time-sleeve-fitting-polyline-simplification-algorithms.pdf">LINEAR-TIME SLEEVE-FITTING POLYLINE SIMPLIFICATION ALGORITHMS</a> - Zhiyuan Zhao, Alan Saalfeld)
+isn't so widely known as Douglas-Peucker, but fits the bill - it's a greedy algorithm that uses
+a sector bound (a minimum and maximum angle) to decide the angle of the next strip and when
+points no longer fit inside a strip from an origin point. However there are a few errors in the paper,
+in particular if the line doubles back inside the strip, some of their algorithm variants will drop
+the furthest points from the origin. By splitting the strip at the furthest point from the origin
+that lies within the sector bound - even if that is not the furthest point that could lie within the strip - we maintain the required guarantee.
+<b>The variant used to draw the map on the left in your browser entirely automatically from 7970 waypoints, is shown below.</b></p>
+
+<pre style="padding: 1em; background-color: #f8f9fa; border: 1px solid #eaecf0; ">
+function stripmap(w, points) {
+  var start = 0;
+  var strips = [];
+  while (start < points.length - 2) {
+    var furthest, furthest_r = -1, lo, hi;
+    for (var i = start + 1; i &gt; points.length; i++) {
+      var [r, theta] = polar_coords(points[start], points[i]);
+      var angle = Math.asin(Math.min(1, w/r));
+      var [lo_i, hi_i] = closed_open_sector(theta - angle, theta + angle);
+      if (i == start + 1) {
+        [lo, hi] = [lo_i, hi_i];
+      } else {
+        [lo, hi] = intersection(lo, hi, lo_i, hi_i);
+        if (hi &gt;= lo) {
+          break;
+        }
+      } 
+      // the split criteria in the next 5 lines differ from ZS
+      theta = normalize_angle(theta, lo);
+      if (theta &gt; hi &amp;&amp; furthest_r &gt; r) {
+        furthest = i;
+        furthest_r = r;
+      }
+    }
+    strips.push(points.slice(start, furthest + 1));
+    start = furthest;
+  }
+  return strips;
+}
+</pre>
+
+<p>After constructing the strips, there's a bunch of tedious maths to orient
+them vertically and fill them with tiles (it's just a flood fill, using the separating
+axis theorem to decide when a map tile intersects the strip). Rendering is pretty quick.</p>
+
+<p>Firstly: <b>it works!</b> There are abrupt changes in direction, but the
+compass roses help - just as they did in Taylor and Skinner's original maps.
+The strips are presented as a continuous vertical map for easy scrolling. It'd be a trivial change
+to adapt this to preferentially split at points of interest, eg route descriptions
+at waypoints; that was my original motivation for doing this - I wanted to
+describe my own cycles through France alongside their routes.</p>
+
+<h2>Other Possible Algorithms (that I won't use)</h2>
+<p>Rather than abrupt changes, is it possible to distort the route so that
+we straighten it <i>somewhat</i> - say finding the minimum changes of curvature
+required to straighten the map? Distorting the map further introduces a complication.
+One attractive feature of the Modified ZS algorithm above is that I can just use pre-rendered map tiles,
+since the resulting transformations are just translations and rotations.
+A straightening of the map is of necessity not an affine transform (ie 
+parallel lines will not be parallel in the result). We <i>can</i> transform
+raster map tiles this way in HTML, using projective transforms (introducing
+perspective) but the result would also distort map labels illegibly and we should
+consider vector transforms of the map instead - ie transform points in the
+underlying map data then re-render.</p>
+
+<p>Some of the things I looked at to attempt this were:</p>
+<ul>
+  <li>finding the minimum curvature path that stays within the desired bounds
+  (see eg <a href="http://www.sciencedirect.com/science/article/pii/S0045794908000163">Race Driver Model, F. Braghin, F. Cheli, S. Melzi, E. Sabbioni</a>).
+  It's nice to know there's a closed form, but this doesn't help, because I need to construct that racetrack in the first place and it may not always be
+  possible.</li>
+  <li>smooth deformations along a spine (instead of slicing into relatively large strips); see the work on <a href="http://www.transmogrifiers.org/description/">Transmogrifiers</a> of Brosz et al.
+  In this case I could just use the route itself as the spine, but I got bogged down thinking about overlapping off-spine regions in tight curves, and aesthetically, we do not want the stripmap
+  to be entirely straight along the route; which means I need the spine to wander around the route. The transformation itself looks great, but I can't get to a decent starting point.
+  </li>
+</ul>
+
+<h2>A* Train-Track - work in progress</h2>
+
+<p>However - if we are using non-affine transforms anyway, there may be simpler
+ones to work with. Imagine building a toy train-track along our route, with
+prefabricated straights and curves. That changes the problem from one of looking
+at a continuous minimum-curvature shape to discrete points with potential connections;
+suggesting a graph search algorithm like A* can be used to discover the optimal
+'train track' to cover our route.</p>
+
+<p>Train tracks consist of clothoid curves, but since we are trying to keep the
+maths simple, we can just consider circular arcs of differing radii of curvature. When we
+come to transform our vector data, circular arcs keeps the equations simple.</p>
+
+<p>I mentioned prefabricated train track segments, but in trying to keep the
+route points covered by the track, it is easier to think of segments that
+start at some variable angle, then at each point on the route we maintain
+an <i>inverse radius of curvature bound</i>, like the sector bound of Zhao and Saalfeld. (I'm going
+to need to insert pics here as this is awkward to describe). When the IRC is negative, the
+track curves left, when it is positive, the track curves right, when it is zero we have straight
+segments. We assign score penalties to excessive track curvature, and greater penalties when the
+track must abruptly change direction; A* will then seek our ideal track. Pseudocode:</p>
+
+<pre style="padding: 1em; background-color: #f8f9fa; border: 1px solid #eaecf0; ">
+def curvature(p0, a, p)
+  # transform origin to right edge
+  p'.x = p.x - p0.x
+  p'.y = p.y - p0.y
+  # rotate away angle
+  p''.x = p'.x * cos a - p'.y * sin a
+  p''.y = p'.x * sin a + p'.y * cos a
+  [arcwidth, theta] = polar(p0, 0)
+  if theta < -pi/4 || pi/4 < theta
+    return Nothing
+  end
+  # (arcwidth/2)/r = cos(pi/2 - theta)
+  Just (2 * cos(pi/2 - theta))/arcwidth
+end
+
+def split_point(P, w, a)
+  right.x = p0.x + w * cos a
+  right.y = p0.y + w * sin a
+  left.x = p0.x - w * cos a
+  left.y = p0.y - w * sin a
+  for p in P
+    if undefined(p0)
+      p0 = p
+    else
+      # transform origin to right edge
+      point_curvature = curvature(p0, a, p)
+      # next line is a sketch, need to add/subtract w from the curvatures
+      if max_left <= point_curvature && point_curvature <= min_right && r > distance(p0, best)
+        best = p
+      end
+      right_curvature = curvature(right, a, p)
+      left_curvature = curvature(left, a, p)
+      if right == Nothing || left == Nothing
+        return best
+      end
+      min_right = min(min_right, fromJust right_curvature)
+      max_left = max(max_left, fromJust left_curvature)
+    end
+  end
+end
+</pre>
+
+<h2>Credits</h2>
+<p>The map data to the left is <a href="http://www.openstreetmap.org/copyright">&copy; OpenStreetMap contributors</a>;
+data is available under the Open Database License, and the cartography is licensed as
+CC BY-SA. The route depicted was recorded by Markus Stitz (<a href="https://twitter.com/reizkultur">@reizkultur</a>) and
+can be found in a more traditional rendering <a href="http://m.gpsies.com/map.do?fileId=bmdudoukriovevpw">here</a>.
+I chose it specifically because it circles back on itself, rather than being a one-way route.</p>
+
+</td></tr></table>
+
+                        
+                        
+<script src="DunblaneTrainStationToHighlandsAndBackViaGlenLyon.js"></script>
+<script src="stripmap.js"></script>
+<script>
+function long2tile(lon,zoom) { return (lon+180)/360*Math.pow(2,zoom); }
+ 
+function lat2tile(lat,zoom)  { return (1-Math.log(Math.tan(lat*Math.PI/180) + 1/Math.cos(lat*Math.PI/180))/Math.PI)/2 *Math.pow(2,zoom); }
+ 
+
+function render_map() {
+  var zoom = 11;
+  var latlon = gpx['features'][0]['geometry']['coordinates'][0];
+  var xydata = latlon.map(function(p) {
+      var [lon, lat, alt] = p;
+      return [long2tile(lon, zoom), lat2tile(lat, zoom)];
+    });
+  var strips = stripmap(0.5, xydata);
+  strips.map(function(s) {
+      render_strip(0.5, s, zoom, document.getElementById("canvas-container"));
+    });
+}
+
+function ready(fn) {
+  if (document.readyState != 'loading') {
+    fn();
+  } else {
+    document.addEventListener('DOMContentLoaded', fn);
+  }
+}
+
+ready(render_map);
+</script>
