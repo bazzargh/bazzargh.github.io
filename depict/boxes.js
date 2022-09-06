@@ -534,6 +534,9 @@ function interpret(state, cmd) {
     case "zoom":
       state.drawingOpacity = 1;
       if (decoded[1]) {
+        if (!state.nodes[decoded[1]]) {
+          createNode(state, ...decoded.slice(1));
+        }
         zoomNode(state, ...decoded.slice(1));
       }
       break;
