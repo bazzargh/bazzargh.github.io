@@ -13,8 +13,11 @@ their creators (aws, google, microsoft, and so on)
 
 # USAGE
 
-Normally you can just go to https://bazzargh.github.io/diagrams/. Editing the
+Normally you can just go to https://bazzargh.github.io/depict/. Editing the
 diagram makes a bookmarkable url for the diagram.
+
+Example:
+https://bazzargh.github.io/depict/?q=add+aws%0Aadd+gcp%0Aadd+azure%0Aadd+internet%0Azoom+aws+layout+zigzag%0Aadd+aws%3Adocker%0Aadd+aws%3Anginx%0Aadd+aws%3Aapache%0Aadd+aws%3Anodejs%0Aadd+aws%3Atomcat%0Aup%0Azoom+gcp+layout+ring%0Aadd+gcp%3Adocker%0Aadd+gcp%3Anginx%0Aadd+gcp%3Aapache%0Aadd+gcp%3Anodejs%0Aadd+gcp%3Atomcat%0Aup%0Aarrow+aws%3Adocker+gcp%3Adocker%0Aarrow+aws%3Anginx+gcp%3Anginx+red%0Aline+aws%3Atomcat+gcp%3Atomcat+blue%0Azoom+internet+layout+row%0Aadd+one%0Aadd+two%0Aadd+three%0Aup%0Azoom+azure+layout+column%0Aadd+azure%3Aone%0Aadd+azure%3Atwo%0Aadd+azure%3Athree%0Azoom+azure%0Aup%0A
 
 The `icons.rb` script is used to regenerate icons.js, like `ruby icons.rb > icons.js`.
 
