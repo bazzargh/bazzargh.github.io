@@ -220,7 +220,35 @@ function drawConnection(from, to, connection) {
     // accessibility: don't just rely on colour
     attrs["stroke-dasharray"] = `${connection.strokeIndex * 5} 5`
   }
-  return createSVGElement("path", attrs);
+  if (connection.label) {
+    var v = 0.09;
+    var labelxy = [(1 + v)*(z2[0]+z1[0])/2 - v*cx, (1 + v)*(z2[1]+z1[1])/2 - v*cy];
+    var labelwh = Math.sqrt((z2[0]-z1[0])**2 + (z2[1]-z1[1])**2);
+    var g = createSVGElement("g", {});
+    var filtered = createSVGElement("g", {
+      filter: "url(#glow)"
+    });
+    var fo = createSVGElement("foreignObject", {
+      x: labelxy[0] - labelwh/2,
+      y: labelxy[1] - labelwh/2,
+      width: labelwh,
+      height: labelwh
+    });
+    var body = createElement("body", {
+      margin: 0,
+      style: `display: flex; justify-content: center; align-items: center; font-size: ${svgholder.clientWidth/60}px;`
+    });
+    var center = createElement("center", {});
+    g.append(filtered);
+    filtered.append(fo);
+    g.append(createSVGElement("path", attrs));
+    fo.append(body);
+    body.append(center);
+    center.append(connection.label);
+    return g;
+  } else {
+    return createSVGElement("path", attrs);
+  }
 }
 
 function chain(elt, ...children) {
@@ -246,7 +274,7 @@ function drawNode(node) {
     width: node.title_width,
     height: node.title_height
   });
-  var body = document.createElement("body", {
+  var body = createElement("body", {
     margin: 0
   });
   var center = createElement("center", {
@@ -616,25 +644,38 @@ function parentNode(state, node) {
   return parent ? parent : "top";
 }
 
-function connectNode(state, connection, from, to, stroke) {
+function connectNode(state, connection, from, to, ...styles) {
   if (!connection || !from || !to) {
     return;
   }
-  stroke = stroke ? stroke : "black"
+  var conn = {
+    "style": connection,
+    "stroke": "black",
+    "strokeIndex": 0
+  };
+  if (styles && styles.length == 1) {
+    conn.stroke = styles[0]
+  }
+  if (styles && styles.length > 1) {
+    var s = styles.reduce(function(p, c, i, a) {
+      if (i%2==1) {
+        p[a[i-1]] = c;
+      };
+      return p
+    }, {});
+    Object.assign(conn, s);
+  }
   if (!Object.hasOwn(state, "strokes")) {
     state.strokes = ["black"];
   }
-  var strokeIndex = state.strokes.indexOf(stroke);
+  var strokeIndex = state.strokes.indexOf(conn.stroke);
   if (strokeIndex < 0) {
-    state.strokes.push(stroke);
-    strokeIndex = state.strokes.indexOf(stroke);
+    state.strokes.push(conn.stroke);
+    conn.strokeIndex = state.strokes.indexOf(conn.stroke);
   }
-  state.nodes[from].connections[to] = {
-    "style": connection,
-    "stroke": stroke,
-    "strokeIndex": strokeIndex
-  };
+  state.nodes[from].connections[to] = conn;
 }
+
 function zoomNode(state,  node, ...styles) {
   var target = state.nodes[node];
   if (target) {

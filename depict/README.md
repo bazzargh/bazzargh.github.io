@@ -52,6 +52,11 @@ A 'row' layout splits the layout into rows separated by dashed lines, column wor
 * `title <title>` by default the title is derived from the node id, but you can change that. You can use
 quoted strings here.
 
+Arrows and lines also support specifying colour/dashing with `stroke <colour>`; another attribute supported
+by connectors is `label`, eg `label one` or `label "one two"`. Labels are drawn with a glow so they don't get
+made unreadable by the lines they are sitting on top of (since there's no way to control the position of labels)
+
+
 # ICONS
 
 Icon attributes, eg `icon:s3` use AWS/K8S/GCP official icon sets. With so many services, I have had
