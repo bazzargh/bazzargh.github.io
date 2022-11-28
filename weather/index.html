@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<head>
+	<meta http-equiv="Content-Security-Policy" content="default-src *; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' 'unsafe-eval'">
+</head>
+<body>
+	<form>
+		<input name="toggle" id="toggle" type="button" value="Show/Hide controls">
+		<input type="button" id="previous" value="Previous">
+		<input type="button" id="next" value="Next">
+		<div id="controls">
+	
+			</select>
+			<fieldset id="filter">
+				<legend>Filter for these conditions</legend>
+				<select name="source" id="source">
+					<option value="">No Filter</option>
+					<option value="filter">Manual Filter</option>
+					<option value="live">Live Weather</option>
+				</select>
+				<br>
+					
+			<input type="radio" disabled="true" name="time" id="r_day" value="day"><label for="r_day">Day</label>
+			<input type="radio" disabled="true" name="time" id="r_dawn" value="dawn"><label for="r_dawn">Dawn</label>
+			<input type="radio" disabled="true" name="time" id="r_dusk" value="dusk"><label for="r_dusk">Dusk</label>
+			<input type="radio" disabled="true" name="time" id="r_night" value="night"><label for="r_night">Night</label>
+			<br>
+			<input type="radio" disabled="true" name="season" id="r_spring" value="spring"><label for="r_spring">Spring</label>
+			<input type="radio" disabled="true" name="season" id="r_summer" value="summer"><label for="r_summer">Summer</label>
+			<input type="radio" disabled="true" name="season" id="r_autumn" value="autumn"><label for="r_autumn">Autumn</label>
+			<input type="radio" disabled="true" name="season" id="r_winter" value="winter"><label for="r_winter">Winter</label>
+			<br>
+			<input type="radio" disabled="true" name="weather" id="r_clear" value="clear"><label for="r_clear">Clear</label>
+			<input type="radio" disabled="true" name="weather" id="r_rain" value="rain"><label for="r_rain">Rain</label>
+			<input type="radio" disabled="true" name="weather" id="r_snow" value="snow"><label for="r_snow">Snow</label>
+			<input type="radio" disabled="true" name="weather" id="r_fog" value="fog"><label for="r_fog">Fog</label>
+			<input type="radio" disabled="true" name="weather" id="r_lightning" value="lightning"><label for="r_lightning">Lightning</label>
+			<input type="radio" disabled="true" name="weather" id="r_sleet" value="sleet"><label for="r_sleet">Sleet</label>
+			<input type="radio" disabled="true" name="weather" id="r_drizzle" value="drizzle"><label for="r_drizzle">Drizzle</label>
+			<input type="radio" disabled="true" name="weather" id="r_showers" value="showers"><label for="r_showers">Showers</label>
+			<input type="radio" disabled="true" name="weather" id="r_hail" value="hail"><label for="r_hail">Hail</label>
+			<br>
+			<input type="radio" disabled="true" name="temp" id="r_freezing" value="freezing"><label for="r_freezing">Freezing</label>
+			<input type="radio" disabled="true" name="temp" id="r_cold" value="cold"><label for="r_cold">Cold</label>
+			<input type="radio" disabled="true" name="temp" id="r_cool" value="cool"><label for="r_cool">Cool</label>
+			<input type="radio" disabled="true" name="temp" id="r_warm" value="warm"><label for="r_warm">Warm</label>
+			<input type="radio" disabled="true" name="temp" id="r_hot" value="hot"><label for="r_hot">Hot</label>
+			<br>
+			<input type="radio" disabled="true" name="wind" id="r_calm" value="calm"><label for="r_calm">Calm</label>
+			<input type="radio" disabled="true" name="wind" id="r_breezy" value="breezy"><label for="r_breezy">Breezy</label>
+			<input type="radio" disabled="true" name="wind" id="r_windy" value="windy"><label for="r_windy">Windy</label>
+			<input type="radio" disabled="true" name="wind" id="r_stormy" value="stormy"><label for="r_stormy">Stormy</label>
+			<br>
+			<input type="radio" disabled="true" name="moon" id="r_moonless" value="moonless"><label for="r_moonless">Moonless</label>
+			<input type="radio" disabled="true" name="moon" id="r_waxing" value="waxing"><label for="r_waxing">Waxing</label>
+			<input type="radio" disabled="true" name="moon" id="r_full" value="full"><label for="r_full">Full</label>
+			<input type="radio" disabled="true" name="moon" id="r_waning" value="waning"><label for="r_waning">Waning</label>
+		</fieldset>
+		<fieldset id="tags">
+			<legend>Current Image Tags</legend>
+		<input type="button" id="clipboard" name="clipboard" value="Copy all to Clipboard">
+		<br>
+		<input type="checkbox" id="day" value="day"><label for="day">Day</label>
+		<input type="checkbox" id="dawn" value="dawn"><label for="dawn">Dawn</label>
+		<input type="checkbox" id="dusk" value="dusk"><label for="dusk">Dusk</label>
+		<input type="checkbox" id="night" value="night"><label for="night">Night</label>
+		<br>
+		<input type="checkbox" id="spring" value="spring"><label for="spring">Spring</label>
+		<input type="checkbox" id="summer" value="summer"><label for="summer">Summer</label>
+		<input type="checkbox" id="autumn" value="autumn"><label for="autumn">Autumn</label>
+		<input type="checkbox" id="winter" value="winter"><label for="winter">Winter</label>
+		<br>
+		<input type="checkbox" id="clear" value="clear"><label for="clear">Clear</label>
+		<input type="checkbox" id="rain" value="rain"><label for="rain">Rain</label>
+		<input type="checkbox" id="snow" value="snow"><label for="snow">Snow</label>
+		<input type="checkbox" id="fog" value="fog"><label for="fog">Fog</label>
+		<input type="checkbox" id="lightning" value="lightning"><label for="lightning">Lightning</label>
+		<input type="checkbox" id="sleet" value="sleet"><label for="sleet">Sleet</label>
+		<input type="checkbox" id="drizzle" value="drizzle"><label for="drizzle">Drizzle</label>
+		<input type="checkbox" id="showers" value="showers"><label for="showers">Showers</label>
+		<input type="checkbox" id="hail" value="hail"><label for="hail">Hail</label>
+		<br>
+		<input type="checkbox" id="freezing" value="freezing"><label for="freezing">Freezing</label>
+		<input type="checkbox" id="cold" value="cold"><label for="cold">Cold</label>
+		<input type="checkbox" id="cool" value="cool"><label for="cool">Cool</label>
+		<input type="checkbox" id="warm" value="warm"><label for="warm">Warm</label>
+		<input type="checkbox" id="hot" value="hot"><label for="hot">Hot</label>
+		<br>
+		<input type="checkbox" id="calm" value="calm"><label for="calm">Calm</label>
+		<input type="checkbox" id="breezy" value="breezy"><label for="breezy">Breezy</label>
+		<input type="checkbox" id="windy" value="windy"><label for="windy">Windy</label>
+		<input type="checkbox" id="stormy" value="stormy"><label for="stormy">Stormy</label>
+		<br>
+		<input type="checkbox" id="moonless" value="moonless"><label for="moonless">Moonless</label>
+		<input type="checkbox" id="waxing" value="waxing"><label for="waxing">Waxing</label>
+		<input type="checkbox" id="full" value="full"><label for="full">Full</label>
+		<input type="checkbox" id="waning" value="waning"><label for="waning">Waning</label>
+		<br>
+		</fieldset>
+		<br>
+		</div>
+</form>
+<img id="image" src="">
+<h2 id="title"></h2>
+<script>
+	PHASES = ["moonless", "waxing", "full", "waning"]
+
+	function wind_class(ws) {
+		var beaufort = Math.round((ws/0.836)**(2/3))
+		if (beaufort < 1) {
+			return "calm"
+		} else if (beaufort < 5) {
+			return "breezy"
+		} else if (beaufort < 8) {
+			return "windy"
+		}
+		return "stormy"
+	}
+
+	function temp_class(t) {
+		// somewhat arbitrary
+		if (t < 0) {
+			return "freezing"
+		} else if (t < 8) {
+			return "cold"
+		} else if (t < 16) {
+			return "cool"
+		} else if (t < 24) {
+			return "warm"
+		}
+		return "hot"
+	}
+
+	function day_of_year(now) {
+		return Math.round((new Date(now.getFullYear(), now.getMonth(), now.getDate()) - new Date(now.getFullYear(), 0, 0))/(24*60*60*1000))
+	}
+
+	function days_in_year(now) {
+		return day_of_year(new Date(now.getFullYear() + 1, 0, 0))
+	}
+
+	function gamma(now) {
+		return 2*Math.PI/days_in_year(now) * (day_of_year(now)-1+(now.getHours()-now.getTimeZoneOffset()/60-12)/24)
+	}
+
+	function equation_of_time(now) {
+		let g = gamma(now)
+		return 229.18*(0.000075 + 0.001868*Math.cos(g) - 0.032077*Math.sin(g) - 0.014615*Math.cos(2*g) - 0.040849*Math.sin(2*g))
+	}
+
+	function declination(now) {
+		let g = gamma(now)
+		return 0.006918 - 0.399912*Math.cos(g) + 0.070257*Math.sin(g) - 0.006758*Math.cos(2*g) + 0.000907*Math.sin(2*g) - 0.002697*Math.cos(3*g) + 0.00148*Math.sin(3*g)
+	}
+
+	function hour_angle(now, lat) {
+		let zenith = 90.833 * Math.PI / 180
+		let lat_r = lat * Math.PI / 180
+		let decl = declination(now)
+		return Math.acos(Math.cos(zenith)/(cos(lat_r)*cos(decl))-tan(lat_r)*tan(decl))
+	}
+
+	function sunrise_sunset(now, lat, lon) {
+		let eqtime = equation_of_time(now)
+		let ha = hour_angle(now, lat) * 180 / Math.PI 
+		// pretty sure this is wrong when clocks change
+		let midnight = new Date(now.getFullYear(), now.getMonths(), now.getDate()).getTime()
+		return new Date(midnight + 60*(720 - 4*(lon - ha) - eqtime)), new Date(midnight + 60*(720 - 4*(lon + ha) - eqtime)) 
+	}
+
+	function phase_of_moon(now, lat) {
+		// accuracy is not necessary.
+		let jd = now.getTime()/86400000 + 2440587.5
+		days = (jd - 2451550.1) % 29.53059
+		fraction = days / 29.53059
+		phase = Math.round(8*fraction)%8
+		// doesn't handle thing correctly in the tropics at all, sorry.
+		if (lat < 0) {
+			// order of phases is reverse in the southern hemisphere,
+			// reuse the northern hemisphere names but present a local pic
+			phase = phase > 0 ? 8 - phase : phase
+		}
+			// not a lot of paintings for each moon phase, so just use 4 phases not 8 ;
+		// but map all 'waxing' and 'waning' phases together, since full/new moons
+		// are very recognizably not those
+			return PHASES[[0,1,1,1,2,3,3,3][phase]]
+	}
+
+	function season_for_date(now, lat) {
+		// meteorological seasons just use months - simple.
+		seasons = ["winter", "spring", "summer", "autumn"]
+		season = Math.floor(((now.getMonth() + 1) % 12)/3)
+		season = lat >= 0 ? season : (season + 2) % 4
+		return seasons[season]
+	}
+
+	function time_of_day(now, lat, lon) {
+		sunrise, sunset = sunrise_sunset(now, lat, lon)
+		now_h = now.getHours()
+		up_h = sunrise.getHours()
+		down_h = sunset.getHours()
+		// round to next hour. this is not an accurate representation
+		// of twilight, but since we only change pic once an hour it
+		// is good enough to give those images a chance to appear.
+		if (now_h < up_h) {
+			return "night"
+		} else if (now_h == up_h) {
+			return "dawn"
+		} else if (now_h < down_h) {
+			return "day"
+		} else if (now_h == down_h) {
+			return "dusk"
+		}
+		return "night"
+	}
+
+	function set_live_tags() {
+		// lat/long hardcoded to glasgow for now.
+		// tz offsets are NOT handled correctly, so this will display incorrectly elsewhere.
+		var now = new Date();
+		var lat = 55.8642;
+		var lon = 4.2518;
+		var tags = [season_for_date(now, lat), time_of_day(now, lat, lon), phase_of_moon(now, lat), temp_class(1), wind_class(1)]
+		return tags
+	}
+
+
+	var index = 0;
+	var images = [];
+	var filtered = [];
+	var form = document.querySelector('form');
+	fetch("images.json").then((response) => response.json()).then((json) => {images = json; filtered = Array.from(images.keys()); reset_form()})
+	function reset_form() {
+		var image = images[filtered[index]]
+		document.querySelector('#image').setAttribute('src', image['og:image'])
+		document.querySelectorAll('input[type=checkbox]').forEach(e => {
+			e.checked = image.tags.includes(e.id)
+		});
+		document.querySelector('#title').innerText = image['og:title']
+	 	//document.querySelector('textarea').value = JSON.stringify(images)
+	}
+	form.addEventListener("change", (e) => {
+		console.log(e.target.id)
+		if (e.target.matches("input[type='radio']")) {
+			var f = new FormData(form);
+			var filters = [f.get("time"), f.get("season"), f.get("weather"), f.get("temp"), f.get("wind")].filter(Boolean)
+			var moon = f.get("moon")
+			filtered = Array.from(images.keys()).filter(i => {var t= images[i].tags; return filters.every(tag=>t.includes(tag)) && (t.includes(moon) || ["waxing", "waning", "full"].every(tag => !t.includes(tag)))})
+			index = 0
+			reset_form()
+		} else if (e.target.matches("input[type='checkbox']")) {
+			var tag = e.target.id;
+			var tagindex = images[index].tags.indexOf(tag);
+			if (tagindex == -1) {
+				images[filtered[index]].tags.push(tag)
+			} else {
+				images[filtered[index]].tags.splice(tagindex, 1)
+			}
+			//document.querySelector('textarea').value = JSON.stringify(images)
+		} else if (e.target.id == "source") {
+			var f = new FormData(form);
+			console.log(f.get("source"))
+			if (f.get("source") == "filter") {
+				document.querySelectorAll('input[type="radio"]').forEach(e => {
+					e.disabled = false;
+				});
+				var f = new FormData(form);
+				var filters = [f.get("time"), f.get("season"), f.get("weather"), f.get("temp"), f.get("wind")].filter(Boolean)
+				var moon = f.get("moon")
+				filtered = Array.from(images.keys()).filter(i => {var t= images[i].tags; return filters.every(tag=>t.includes(tag)) && (t.includes(moon) || ["waxing", "waning", "full"].every(tag => !t.includes(tag)))})
+				index = 0
+				reset_form()
+			} else if (f.get("source") == "live") {
+				document.querySelectorAll('input[type="radio"]').forEach(e => {
+					e.disabled = true;
+					e.checked = "false"
+				});
+				var tags = set_live_tags();
+				document.querySelectorAll('input[type="radio"]').forEach(e => {
+					if (tags.includes(e.id.substr(2))) {
+						e.checked = true;
+					}
+				});
+				var f = new FormData(form);
+				var filters = [f.get("time"), f.get("season"), f.get("weather"), f.get("temp"), f.get("wind")].filter(Boolean)
+				var moon = f.get("moon")
+				filtered = Array.from(images.keys()).filter(i => {var t= images[i].tags; return filters.every(tag=>t.includes(tag)) && (t.includes(moon) || ["waxing", "waning", "full"].every(tag => !t.includes(tag)))})
+				index = 0
+				reset_form()
+			} else {
+				filtered = images.keys()
+				index = 0
+				document.querySelectorAll('input[type="radio"]').forEach(e => {
+					e.disabled = true;
+					e.checked = "false"
+				});
+			}
+
+		}
+	})
+	form.addEventListener("click", (e) => {
+		console.log(e.target.id)
+		if (e.target.id=="clipboard") {
+			navigator.clipboard.writeText(JSON.stringify(images))	
+		} else if (e.target.id=="toggle") {
+			var controls = document.getElementById("controls")
+			var display = window.getComputedStyle(controls).display;
+			if (display == "none") {
+				controls.style.display = "block"
+			} else {
+				controls.style.display = "none"
+			}
+		} else if (e.target.id == "previous") {
+			index = Math.max(0, index - 1);
+			reset_form()
+		} else if (e.target.id == "next") {
+			index = Math.min(index + 1, filtered.length - 1)
+			reset_form()
+		}
+	})
+</script>
+</body>
