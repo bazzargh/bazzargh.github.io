@@ -788,9 +788,16 @@ function initialState() {
 }
 
 // handle the initial setting of the page before we set up the event listener.
+// prefer using the fragment to the query string for privacy, but allow the query
+// string to be parsed if it's set, for backwards compatibility
 var q = new URLSearchParams(window.location.search)
 if (q.get("q")) {
   document.getElementById('commands').value = q.get("q");
+} else {
+  q = new URLSearchParams(window.location.hash)
+  if (q.get("#q")) {
+    document.getElementById('commands').value = q.get("#q");
+  }
 }
 
 // Handle input. Debounce, when typing stops, calculate state
@@ -801,7 +808,7 @@ document.addEventListener("selectionchange", function(event) {
   timeout = setTimeout(function() {
     cancelAnimationFrame(animation);
     var value = commands.value;
-    history.replaceState(null, null, `?${new URLSearchParams({"q": value})}`);
+    history.replaceState(null, null, `?#${new URLSearchParams({"q": value})}`);
     var eol = value.indexOf("\n", commands.selectionStart);
     if (eol >= 0) {
       value = value.substr(0, eol);
