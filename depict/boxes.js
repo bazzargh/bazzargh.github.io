@@ -224,27 +224,26 @@ function drawConnection(from, to, connection) {
     var v = 0.09;
     var labelxy = [(1 + v)*(z2[0]+z1[0])/2 - v*cx, (1 + v)*(z2[1]+z1[1])/2 - v*cy];
     var labelwh = Math.sqrt((z2[0]-z1[0])**2 + (z2[1]-z1[1])**2);
-    var g = createSVGElement("g", {});
-    var filtered = createSVGElement("g", {
-      filter: "url(#glow)"
-    });
-    var fo = createSVGElement("foreignObject", {
-      x: labelxy[0] - labelwh/2,
-      y: labelxy[1] - labelwh/2,
-      width: labelwh,
-      height: labelwh
-    });
-    var body = createElement("body", {
-      margin: 0,
-      style: `display: flex; justify-content: center; align-items: center; font-size: ${svgholder.clientWidth/60}px;`
-    });
-    var center = createElement("center", {});
-    g.append(filtered);
-    filtered.append(fo);
-    g.append(createSVGElement("path", attrs));
-    fo.append(body);
-    body.append(center);
-    center.append(connection.label);
+    var g = createSVGElement("g", {},
+      createSVGElement("g", {
+          filter: "url(#glow)"
+        },
+        createSVGElement("foreignObject", {
+            x: labelxy[0] - labelwh/2,
+            y: labelxy[1] - labelwh/2,
+            width: labelwh,
+            height: labelwh
+          },
+          createElement("body", {
+              margin: 0,
+              style: `display: flex; justify-content: center; align-items: center; font-size: ${svgholder.clientWidth/60}px;`
+            },
+            createElement("center", {}, connection.label)
+          )
+        )
+      ),
+      createSVGElement("path", attrs)
+    );
     return g;
   } else {
     return createSVGElement("path", attrs);
@@ -265,37 +264,33 @@ function append(elt, ...children) {
 }
 
 function drawNode(node) {
-  var g = createSVGElement("g", {opacity: node.opacity});
-
-  var fo = createSVGElement("foreignObject", {
-    opacity: node.title_opacity,
-    x: node.title_x,
-    y: node.title_y,
-    width: node.title_width,
-    height: node.title_height
-  });
-  var body = createElement("body", {
-    margin: 0
-  });
-  var center = createElement("center", {
-    style: `font-size: ${Math.min(node.title_width/8, node.title_height/2)}px`
-  });
-  fo.append(body);
-  body.append(center);
-  center.append(node.title);
-  var image = createSVGElement("image", {
-    opacity: node.icon_opacity,
-    href: node.icon,
-    x: node.icon_x,
-    y: node.icon_y,
-    width: node.icon_width
-  });
-  var title = createSVGElement("title", {})
-  title.append(node.icon)
-  g.append(
-    fo,
-    image,
-    title,
+  var g = createSVGElement("g", {opacity: node.opacity},
+    createSVGElement("foreignObject", {
+        opacity: node.title_opacity,
+        x: node.title_x,
+        y: node.title_y,
+        width: node.title_width,
+        height: node.title_height
+      },
+      createElement("body", {
+          margin: 0
+        },
+        createElement("center", {
+            style: `font-size: ${Math.min(node.title_width/8, node.title_height/2)}px`
+          },
+          node.title
+        )
+      )
+    ),
+    createSVGElement("image", {
+        opacity: node.icon_opacity,
+        href: node.icon,
+        x: node.icon_x,
+        y: node.icon_y,
+        width: node.icon_width
+      },
+    ),
+    createSVGElement("title", {}, node.icon),
     createSVGElement("rect", {
       opacity: node.box_opacity,
       x: node.x,
@@ -421,25 +416,23 @@ function rowLayout(state, node, x, y, w, h) {
 // arrange the nodes in a ring
 function ringLayout(state, node, x, y, w, h) {
   var list = node.children;
-  var a, r, iw, ih;
   if (list.length == 1) {
     layoutNode(state, list[0], x, y, w, h);
     return;
   }
-  var a = 2 * Math.PI / list.length;
-  var ratio = 2 * Math.sin(a / 2);
-  const aspect = 4 / 3;
-  if (w > h) {
-    r = h / (1 + ratio);
-    ih = r * ratio / 2;
-    iw = aspect * ih;
-  } else {
-    r = w / (1 + ratio);
-    iw = r * ratio / 2;
-    ih = iw / aspect;
-  }
+  // find the largest node size where the nodes don't overlap.
+  // iw = aspect * ih, area is iw*ih, radius is half the diagonal sqr(ih^2+iw^2)
+  // with equiangular points, the distance between two points is 2*r*sin(a/2)
+  // on a circle, but we are on an ellipse with axis lengths w-iw, h-ih.
+  // that gives 2 equations for ih, we need the smaller answer to prevent overlapsA
+  const a = 2*Math.PI/list.length;
+  const aspect = 4/3;
+  const diagonal = Math.sqrt(1+aspect*aspect);
+  const spacing = 2 * Math.sin(a/2)
+  const ih = 0.7*Math.min(h*spacing/(diagonal + spacing), w*spacing/(diagonal + aspect * spacing))
+  const iw = aspect * ih;
   for (var i = 0; i < list.length; i++) {
-    const angle = 2 * Math.PI - (i + 1) * a;
+    const angle = Math.PI/2 - i * a;
     const ix = x + w / 2 + (w - iw) * Math.cos(angle) / 2 - iw / 2;
     const iy = y + h / 2 - (h - ih) * Math.sin(angle) / 2 - ih / 2;
     layoutNode(state, list[i], ix, iy, iw, ih, "ring");
@@ -449,19 +442,17 @@ function ringLayout(state, node, x, y, w, h) {
 // ltr-rtl alternating to fit a region.
 function zigzagLayout(state, node, x, y, w, h) {
   var list = node.children;
-  var best = 0
-  var bn, bm, bw, bh, iw, ih;
-  for (var n = 1; n <= list.length; n++) {
-    var m = Math.ceil(list.length/n);
-    ih = Math.min(3/4 * w/n, h/m);
-    iw = Math.min(w/n, 4/3 * h/m);
-    var area = iw * ih * n * m;
-    if (area < best) {
-      break;
-    }
-    [best, bn, bm, bw, bh] = [area, n, m, iw, ih];
+  var n, m, iw, ih;
+  // find the grid size where the nodes fill the greatest proportion of the screen.
+  const aspect = 4/3;
+  if (w > h*aspect) {
+    m = Math.ceil(Math.sqrt(list.length) * h * aspect / w);
+    n = Math.ceil(list.length / m);
+  } else {
+    n = Math.ceil(Math.sqrt(list.length) * w / (h * aspect));
+    m = Math.ceil(list.length / n);
   }
-  [m, n, iw, ih] = [bm, bn, 0.9 * bw, 0.9 * bh];
+  [iw, ih] = [0.9 * w/n, 0.9 * h/m];
   var vm = (h - m * ih) / (m + 1);
   for (var i = 0; i < list.length; i++) {
     var r = Math.floor(i * m / list.length);
@@ -559,6 +550,7 @@ function interpret(state, cmd) {
         }
         state.editing = decoded[1];
         updateNode(state, ...decoded.slice(1));
+        state.previous = decoded[1];
       }
       break;
     case "zoom":
@@ -574,27 +566,28 @@ function interpret(state, cmd) {
       state.drawingOpacity = 1;
       if (decoded[1]) {
         createNode(state, ...decoded.slice(1));
+        state.previous = decoded[1]
       }
       break;
     case "line":
-      state.drawingOpacity = 1;
-      if (!state.nodes[decoded[1]]) {
-        createNode(state, ...decoded.slice(1));  
-      }
-      if (!state.nodes[decoded[2]]) {
-        createNode(state, ...decoded.slice(2));  
-      }
-      connectNode(state, ...decoded);
-      break;
     case "arrow":
       state.drawingOpacity = 1;
-      if (!state.nodes[decoded[1]]) {
-        createNode(state, ...decoded.slice(1));  
+      if (decoded.length == 2) {
+        if (!state.nodes[decoded[1]]) {
+          createNode(state, ...decoded.slice(1));
+        }
+        connectNode(state, token[0], state.previous, decoded[1]);
+        state.previous = decoded[1];
+      } else {
+        if (!state.nodes[decoded[1]]) {
+          createNode(state, ...decoded.slice(1));
+        }
+        if (!state.nodes[decoded[2]]) {
+          createNode(state, ...decoded.slice(2));
+        }
+        connectNode(state, ...decoded);
+        state.previous = decoded[2];
       }
-      if (!state.nodes[decoded[2]]) {
-        createNode(state, ...decoded.slice(2));  
-      }
-      connectNode(state, ...decoded);
       break;
     case "disconnect":
       state.drawingOpacity = 1;
@@ -687,18 +680,21 @@ function zoomNode(state,  node, ...styles) {
   }
 }
 
-function createElement(name, attrs) {
-  var elt = document.createElementNS('http://www.w3.org/1999/xhtml', name);
+function createElement(name, attrs, ...content) {
+  return createNSElement('http://www.w3.org/1999/xhtml', name, attrs, content);
+}
+
+function createSVGElement(name, attrs, ...content) {
+  return createNSElement('http://www.w3.org/2000/svg', name, attrs, content);
+}
+
+function createNSElement(ns, name, attrs, content) {
+  var elt = document.createElementNS(ns, name);
   for (var [key, value] of Object.entries(attrs)) {
     elt.setAttribute(key, `${value}`);
   }
-  return elt;
-}
-
-function createSVGElement(name, attrs) {
-  var elt = document.createElementNS('http://www.w3.org/2000/svg', name);
-  for (var [key, value] of Object.entries(attrs)) {
-    elt.setAttribute(key, `${value}`);
+  for (var child of content) {
+    elt.append(child);
   }
   return elt;
 }
@@ -784,6 +780,7 @@ function initialState() {
     depth: 4,
     focus: "top",
     editing: "top",
+    previous: "top",
     drawingOpacity: 0,
     markup: []
   }
