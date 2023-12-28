@@ -290,10 +290,12 @@ function drawNode(node) {
     y: node.icon_y,
     width: node.icon_width
   });
-  //image.append(createSVGElement("title")
+  var title = createSVGElement("title", {})
+  title.append(node.icon)
   g.append(
     fo,
     image,
+    title,
     createSVGElement("rect", {
       opacity: node.box_opacity,
       x: node.x,
