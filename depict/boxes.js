@@ -782,7 +782,8 @@ function initialState() {
     depth: 4,
     focus: "top",
     editing: "top",
-    drawingOpacity: 0
+    drawingOpacity: 0,
+    markup: []
   }
   return bare;
 }
