@@ -432,9 +432,10 @@ function ringLayout(state, node, x, y, w, h) {
   const ih = 0.7*Math.min(h*spacing/(diagonal + spacing), w*spacing/(diagonal + aspect * spacing))
   const iw = aspect * ih;
   for (var i = 0; i < list.length; i++) {
-    const angle = Math.PI/2 - i * a;
-    const ix = x + w / 2 + (w - iw) * Math.cos(angle) / 2 - iw / 2;
-    const iy = y + h / 2 - (h - ih) * Math.sin(angle) / 2 - ih / 2;
+    const angle1 = Math.PI/2 - i * a;
+    const angle2 = angle1 - (h-w)/(w+h) * Math.sin(2*angle1)*a;
+    const ix = x + w / 2 + (w - iw) * Math.cos(angle2) / 2 - iw / 2;
+    const iy = y + h / 2 - (h - ih) * Math.sin(angle2) / 2 - ih / 2;
     layoutNode(state, list[i], ix, iy, iw, ih, "ring");
   }
 }
